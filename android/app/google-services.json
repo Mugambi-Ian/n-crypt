@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "919824918200",
+    "project_id": "n-crypt-ke",
+    "storage_bucket": "n-crypt-ke.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919824918200:android:8dca1b12e97fd740e2364d",
+        "android_client_info": {
+          "package_name": "com.cnm.crypt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919824918200-dhq5t18qk8ms18d32oidptq78ofdpqtq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cnm.crypt",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "919824918200-ujfnr6rj001o05s71ceort1qknvg31dp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwbGYY3mf3rhcH_wj2iTLOLoWy8EM0pxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919824918200-ujfnr6rj001o05s71ceort1qknvg31dp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
