@@ -8,7 +8,6 @@ import { Keyboard, StyleSheet, Text, View, StatusBar } from "react-native";
 import { _auth } from "./src/config";
 import AuthScreen from "./src/main/app-auth/auth";
 import SplashScreen from "./src/main/app-splash/splash";
-import Home from "./src/main/app-home/home";
 import * as Animatable from "react-native-animatable";
 import {
   fadeOut,
@@ -20,6 +19,7 @@ import {
 } from "./src/assets/animations";
 import ProgressBar from "react-native-progress/Circle";
 import Dialog from "react-native-dialog";
+import Dashboard from "./src/main/app-home/dashboard";
 
 export default class App extends Component {
   state = {
@@ -104,11 +104,14 @@ export default class App extends Component {
             openTimedSnack={this.openTimedSnack.bind(this)}
           />
         ) : (
-          <Home
+          <Dashboard
             startLoader={this.startLoader.bind(this)}
             closeLoader={this.closeLoader.bind(this)}
             openTimedSnack={this.openTimedSnack.bind(this)}
             openDialog={this.openDialog.bind(this)}
+            unathorizeUser={() => {
+              this.setState({ authenticated: false });
+            }}
           />
         )}
         {this.state.loader ? (

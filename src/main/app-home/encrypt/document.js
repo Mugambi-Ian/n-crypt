@@ -9,10 +9,10 @@ import {
   BackHandler,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-import { slideInRight } from "../../../../assets/animations/index";
+import { slideInRight } from "../../../assets/animations/index";
 import * as FileSystem from "expo-file-system";
-import { _storage, _database, _auth, TimeStamp } from "../../../../config";
-import { encryptText } from "../../../../encryption/index";
+import { _storage, _database, _auth, TimeStamp } from "../../../config";
+import { encryptText } from "../../../encryption/index";
 import DocumentPicker from "react-native-document-picker";
 import esrever from "esrever";
 const style = StyleSheet.create({
@@ -92,7 +92,6 @@ export default class EncryptDocument extends React.Component {
   };
 
   async componentDidMount() {
-    this.props.enableChill();
     this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
       {
         if (this.state.block) {
@@ -111,13 +110,13 @@ export default class EncryptDocument extends React.Component {
       let reader = new FileReader();
       reader.readAsText(result);
       reader.addEventListener("loadend", () => {
-        console.log(reader.result);
         let name = res.name;
-        const content = JSON.stringify({
+        let content = JSON.stringify({
           type: res.type,
           content: reader.result,
           name,
         });
+        content = "##Start##" + content + "##End##";
         let title = name.replace("/ /g", "_").replace("/./g", "");
         title = title.replace(".", "_");
         this.setState({ content, title });
@@ -126,12 +125,11 @@ export default class EncryptDocument extends React.Component {
     } catch (err) {
       this.props.closeLoader();
       this.props.goHome();
-      this.props.openTimedSnack("Failed to fetch file.");
+      this.props.openTimedSnack("Failed to fetch file.",true);
       console.log(err);
     }
   }
   componentWillUnmount() {
-    this.props.disableChill();
     this.backHandler.remove();
   }
   async encryptUpload() {
@@ -141,11 +139,7 @@ export default class EncryptDocument extends React.Component {
       console.log("encrypt");
       this.setState({ block: true });
       var fileUri =
-        FileSystem.documentDirectory +
-        "/" +
-        this.state.title +
-        new Date().getTime() +
-        ".penc";
+        FileSystem.documentDirectory + "/" + this.state.title + ".penc";
       await FileSystem.writeAsStringAsync(fileUri, message, {
         encoding: FileSystem.EncodingType.UTF8,
       });
@@ -153,15 +147,16 @@ export default class EncryptDocument extends React.Component {
       const _file = await response.blob();
       const uploadTask = _storage
         .ref(
-          "/encryption/documents/" +
+          "/encryption/" +
             _auth.currentUser.uid +
             "/" +
             this.state.title +
+            new Date().getTime() +
             ".penc"
         )
         .put(_file);
       const ref = _database
-        .ref("users/" + _auth.currentUser.uid + "/encryption/documents/")
+        .ref("users/" + _auth.currentUser.uid + "/encryption")
         .push();
       let url;
       uploadTask
@@ -173,28 +168,24 @@ export default class EncryptDocument extends React.Component {
               .then(
                 function (downloadURL) {
                   url = "" + downloadURL;
+                  if (url) {
+                    ref.set({
+                      title: this.state.title,
+                      url,
+                      uploaded: TimeStamp,
+                      type: "Document",
+                    });
+                    this.props.closeLoader();
+                    this.props.openTimedSnack(
+                      "Encryption Succesfull: File Uploaded",
+                      true
+                    );
+                    this.props.goHome();
+                  }
                 }.bind(this)
               )
               .catch(async (e) => {
                 console.log(e);
-              })
-              .finally(() => {
-                if (url) {
-                  ref.set({
-                    title: this.state.title,
-                    url,
-                    uploaded: TimeStamp,
-                  });
-                  this.props.closeLoader();
-                  this.props.openTimedSnack(
-                    "Encryption Succesfull: File Uploaded",
-                    true
-                  );
-                  this.props.goHome();
-                } else {
-                  this.props.closeLoader();
-                  this.props.openTimedSnack("Encryption Failed", true);
-                }
               });
           }.bind(this)
         )
@@ -226,7 +217,7 @@ export default class EncryptDocument extends React.Component {
           >
             <Image
               style={style.titleBtn}
-              source={require("../../../../assets/drawable/ic-full.png")}
+              source={require("../../../assets/drawable/ic-full.png")}
             />
           </TouchableOpacity>
         </View>

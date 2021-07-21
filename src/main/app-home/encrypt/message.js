@@ -9,11 +9,11 @@ import {
   BackHandler,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
-import { slideInRight, slideInLeft } from "../../../../assets/animations/index";
+import { slideInRight, slideInLeft } from "../../../assets/animations/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system";
-import { _storage, _database, _auth, TimeStamp } from "../../../../config";
-import { encryptText } from "../../../../encryption/index";
+import { _storage, _database, _auth, TimeStamp } from "../../../config";
+import { encryptText } from "../../../encryption/index";
 const style = StyleSheet.create({
   mainContent: {
     width: "100%",
@@ -83,7 +83,7 @@ const style = StyleSheet.create({
   },
 });
 
-export default class CreateMessage extends React.Component {
+export default class EncryptMessage extends React.Component {
   state = {
     title: "",
     content: "",
@@ -99,6 +99,8 @@ export default class CreateMessage extends React.Component {
       });
       await AsyncStorage.setItem("@Msg_Draft", jsonValue);
     } catch (e) {
+      console.log(e);
+
       this.props.openTimedSnack("Caching Error", true);
     }
   }
@@ -108,6 +110,8 @@ export default class CreateMessage extends React.Component {
       const jsonValue = await AsyncStorage.getItem("@Msg_Draft");
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (e) {
+      console.log(e);
+
       this.props.openTimedSnack("Caching Error", true);
     }
   }
@@ -115,12 +119,12 @@ export default class CreateMessage extends React.Component {
     try {
       await AsyncStorage.setItem("@Msg_Draft", "");
     } catch (e) {
+      console.log(e);
       this.props.openTimedSnack("Caching Error", true);
     }
     return true;
   }
   async componentDidMount() {
-    this.props.enableChill();
     this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
       {
         if (this.state.block) {
@@ -136,8 +140,7 @@ export default class CreateMessage extends React.Component {
               func: () => {
                 this.saveDraft().then(() => {
                   this.props.openTimedSnack(
-                    "Draft Saved",
-                    this.props.authenticated
+                    "Draft Saved",true
                   );
                   this.props.goHome();
                 });
@@ -163,20 +166,23 @@ export default class CreateMessage extends React.Component {
     });
   }
   componentWillUnmount() {
-    this.props.disableChill();
-    this.props.disableChill();
     this.backHandler.remove();
   }
   async encryptUpload() {
     this.props.startLoader();
     this.setState({ block: true });
-    const message = encryptText(this.state.content, this.state.password);
+    const message = encryptText(
+      "##Start##" +
+        "content:" +
+        this.state.content +
+        "<####>" +
+        "title:" +
+        this.state.title +
+        "##End##",
+      this.state.password
+    );
     var fileUri =
-      FileSystem.documentDirectory +
-      "/" +
-      this.state.title +
-      new Date().getTime() +
-      ".menc";
+      FileSystem.documentDirectory + "/" + this.state.title + ".menc";
     await FileSystem.writeAsStringAsync(fileUri, message, {
       encoding: FileSystem.EncodingType.UTF8,
     });
@@ -184,15 +190,16 @@ export default class CreateMessage extends React.Component {
     const _file = await response.blob();
     const uploadTask = _storage
       .ref(
-        "/encryption/messages/" +
+        "/encryption/" +
           _auth.currentUser.uid +
           "/" +
           this.state.title +
+          new Date().getTime() +
           ".menc"
       )
       .put(_file);
     const ref = _database
-      .ref("users/" + _auth.currentUser.uid + "/encryption/messages")
+      .ref("users/" + _auth.currentUser.uid + "/encryption")
       .push();
     let url;
     uploadTask
@@ -204,30 +211,26 @@ export default class CreateMessage extends React.Component {
             .then(
               function (downloadURL) {
                 url = "" + downloadURL;
+                if (url) {
+                  ref.set({
+                    title: this.state.title,
+                    url,
+                    uploaded: TimeStamp,
+                    type: "Message",
+                  });
+                  this.clearCache().finally(() => {
+                    this.props.closeLoader();
+                    this.props.openTimedSnack(
+                      "Encryption Succesfull: File Uploaded",
+                      true
+                    );
+                    this.props.goHome();
+                  });
+                }
               }.bind(this)
             )
             .catch(async (e) => {
               console.log(e);
-            })
-            .finally(() => {
-              if (url) {
-                ref.set({
-                  title: this.state.title,
-                  url,
-                  uploaded: TimeStamp,
-                });
-                this.clearCache().finally(() => {
-                  this.props.closeLoader();
-                  this.props.openTimedSnack(
-                    "Encryption Succesfull: File Uploaded",
-                    true
-                  );
-                  this.props.goHome();
-                });
-              } else {
-                this.props.closeLoader();
-                this.props.openTimedSnack("Encryption Failed", true);
-              }
             });
         }.bind(this)
       )
@@ -268,13 +271,13 @@ export default class CreateMessage extends React.Component {
           >
             <Image
               style={style.titleBtn}
-              source={require("../../../../assets/drawable/ic-send.png")}
+              source={require("../../../assets/drawable/ic-send.png")}
             />
           </TouchableOpacity>
         </View>
         <View style={{ height: 30 }} />
         {this.state.encryptMessage ? (
-          <EncryptMessage
+          <EncryptM
             update={(x) => {
               this.setState({ ...x });
             }}
@@ -304,7 +307,7 @@ export default class CreateMessage extends React.Component {
                 <TextInput
                   placeholderTextColor="#929292"
                   onChangeText={(e) => {
-                    this.setState({ content: e });
+                    this.setState({ content: e.toString() });
                   }}
                   multiline
                   placeholder="Content"
@@ -319,7 +322,7 @@ export default class CreateMessage extends React.Component {
     );
   }
 }
-class EncryptMessage extends React.Component {
+class EncryptM extends React.Component {
   render() {
     return (
       <Animatable.View
