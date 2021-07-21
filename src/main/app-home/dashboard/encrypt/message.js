@@ -12,7 +12,7 @@ import * as Animatable from "react-native-animatable";
 import { slideInRight, slideInLeft } from "../../../../assets/animations/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
+import { _storage, _database, _auth, TimeStamp } from "../../../../config";
 import { encryptText } from "../../../../encryption/index";
 const style = StyleSheet.create({
   mainContent: {
@@ -71,8 +71,8 @@ const style = StyleSheet.create({
     elevation: 4,
     marginLeft: 20,
     marginRight: 20,
-    marginBottom: 10,
-    minHeight: 280,
+    marginBottom: 20,
+    flex: 1,
   },
   ContentInput: {
     padding: 0,
@@ -167,6 +167,72 @@ export default class CreateMessage extends React.Component {
     this.props.disableChill();
     this.backHandler.remove();
   }
+  async encryptUpload() {
+    this.props.startLoader();
+    this.setState({ block: true });
+    const message = encryptText(this.state.content, this.state.password);
+    var fileUri =
+      FileSystem.documentDirectory +
+      "/" +
+      this.state.title +
+      new Date().getTime() +
+      ".menc";
+    await FileSystem.writeAsStringAsync(fileUri, message, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+    const response = await fetch(fileUri);
+    const _file = await response.blob();
+    const uploadTask = _storage
+      .ref(
+        "/encryption/messages/" +
+          _auth.currentUser.uid +
+          "/" +
+          this.state.title +
+          ".menc"
+      )
+      .put(_file);
+    const ref = _database
+      .ref("users/" + _auth.currentUser.uid + "/encryption/messages")
+      .push();
+    let url;
+    uploadTask
+      .on(
+        "state_changed",
+        function () {
+          uploadTask.snapshot.ref
+            .getDownloadURL()
+            .then(
+              function (downloadURL) {
+                url = "" + downloadURL;
+              }.bind(this)
+            )
+            .catch(async (e) => {
+              console.log(e);
+            })
+            .finally(() => {
+              if (url) {
+                ref.set({
+                  title: this.state.title,
+                  url,
+                  uploaded: TimeStamp,
+                });
+                this.clearCache().finally(() => {
+                  this.props.closeLoader();
+                  this.props.openTimedSnack(
+                    "Encryption Succesfull: File Uploaded",
+                    true
+                  );
+                  this.props.goHome();
+                });
+              } else {
+                this.props.closeLoader();
+                this.props.openTimedSnack("Encryption Failed", true);
+              }
+            });
+        }.bind(this)
+      )
+      .bind(this);
+  }
   render() {
     return (
       <Animatable.View
@@ -183,49 +249,7 @@ export default class CreateMessage extends React.Component {
               await setTimeout(async () => {
                 if (this.state.encryptMessage) {
                   if (this.state.password && this.state.password.length >= 8) {
-                    //this.props.startLoader();
-                    const message = encryptText(
-                      this.state.content,
-                      this.state.password
-                    );
-                    const res = await MediaLibrary.requestPermissionsAsync();
-                    if (res.granted) {
-                      var fileUri =
-                        FileSystem.documentDirectory +
-                        "/" +
-                        this.state.title +
-                        ".txt";
-
-                      console.log(fileUri, message, res);
-                      try {
-                        await FileSystem.writeAsStringAsync(fileUri, message, {
-                          encoding: FileSystem.EncodingType.UTF8,
-                        }).then(() => {});
-                        const album = await MediaLibrary.getAlbumAsync(
-                          "Download"
-                        );
-                        const asset = await MediaLibrary.createAssetAsync(
-                          fileUri
-                        );
-                        if (album == null) {
-                          await MediaLibrary.createAlbumAsync(
-                            "Download",
-                            asset,
-                            false
-                          );
-                        } else {
-                          await MediaLibrary.addAssetsToAlbumAsync(
-                            [asset],
-                            album,
-                            false
-                          );
-                        }
-                      } catch (error) {
-                        console.log(error);
-                      }
-                    } else {
-                      console.log("permission not granted");
-                    }
+                    await this.encryptUpload();
                   } else {
                     this.props.openTimedSnack(
                       "8 Char long password Required",
@@ -305,7 +329,7 @@ class EncryptMessage extends React.Component {
       >
         <View style={{ height: 30 }} />
         <View style={style.field}>
-          <Text style={style.fieldTitle}>Your Encrytpion password</Text>
+          <Text style={style.fieldTitle}>Your Encrytpion Password</Text>
           <TextInput
             value={this.props.password}
             placeholderTextColor="#929292"

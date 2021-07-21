@@ -1,21 +1,3 @@
 {
-  "expo": {
-    "name": "cnm.crypt",
-    "slug": "cnm__crypt",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "package": "com.cnm.ncrypt"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
-  }
+  "name": "cnm.crypt"
 }

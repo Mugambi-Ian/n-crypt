@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   StyleSheet,
   Text,
@@ -6,30 +6,31 @@ import {
   View,
   Image,
   ScrollView,
-} from 'react-native';
-import * as Animatable from 'react-native-animatable';
-import {slideInRight, slideInLeft} from '../../../assets/animations/index';
-import CreateMessage from './encrypt/message';
+} from "react-native";
+import * as Animatable from "react-native-animatable";
+import { slideInRight, slideInLeft } from "../../../assets/animations/index";
+import CreateMessage from "./encrypt/message";
+import EncryptDocument from "./encrypt/document";
 
 const style = StyleSheet.create({
   mainContent: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#fff',
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#fff",
   },
   titleBar: {
     top: 10,
     marginLeft: 20,
     height: 40,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   titleText: {
-    alignSelf: 'center',
+    alignSelf: "center",
     flex: 1,
-    fontFamily: 'Raleway-Bold',
+    fontFamily: "Raleway-Bold",
     fontSize: 27,
-    color: '#000',
-    borderLeftColor: '#ff011d',
+    color: "#000",
+    borderLeftColor: "#ff011d",
     borderLeftWidth: 5,
     paddingLeft: 15,
   },
@@ -42,7 +43,7 @@ const style = StyleSheet.create({
     marginTop: 20,
   },
   dashCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginRight: 20,
     marginLeft: 20,
     height: 210,
@@ -53,12 +54,12 @@ const style = StyleSheet.create({
   },
   dashContent: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingLeft: 20,
     paddingRight: 20,
   },
   dashCardLast: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginRight: 20,
     marginLeft: 20,
     height: 210,
@@ -69,24 +70,24 @@ const style = StyleSheet.create({
   },
   dashContent: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingLeft: 20,
 
-    borderBottomColor: '#f3f3f3',
+    borderBottomColor: "#f3f3f3",
     borderBottomWidth: 2,
   },
   dashIcon: {
-    alignSelf: 'center',
+    alignSelf: "center",
     height: 80,
     width: 80,
     marginRight: 10,
   },
   dashDetails: {
-    flexDirection: 'column',
+    flexDirection: "column",
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginLeft: 10,
-    borderLeftColor: '#f3f3f3',
+    borderLeftColor: "#f3f3f3",
     borderLeftWidth: 2,
     padding: 5,
     paddingTop: 0,
@@ -94,27 +95,27 @@ const style = StyleSheet.create({
     paddingRight: 20,
   },
   dashTitle: {
-    fontFamily: 'Raleway-SemiBold',
+    fontFamily: "Raleway-SemiBold",
     fontSize: 22,
-    color: '#000',
+    color: "#000",
     marginLeft: 5,
   },
   dashDescription: {
-    fontFamily: 'Raleway-Regular',
+    fontFamily: "Raleway-Regular",
     fontSize: 18,
-    color: '#57585a',
+    color: "#57585a",
     marginLeft: 5,
   },
   dashBtn: {
-    backgroundColor: '#f3f3f3',
+    backgroundColor: "#f3f3f3",
     padding: 14,
     paddingTop: 7,
-    color: '#57585a',
-    fontFamily: 'Raleway-Bold',
+    color: "#57585a",
+    fontFamily: "Raleway-Bold",
     fontSize: 20,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
@@ -122,12 +123,13 @@ export default class Dashboard extends React.Component {
   state = this.props.state
     ? this.props.state
     : {
-        currentScreen: 'home',
-        title: 'Dashboard',
+        currentScreen: "home",
+        title: "Dashboard",
       };
   goHome() {
-    this.setState({currentScreen: 'home', title: 'Dashboard', back: true});
+    this.setState({ currentScreen: "home", title: "Dashboard", back: true });
   }
+
   Card(x) {
     return (
       <View style={x.last ? style.dashCardLast : style.dashCard}>
@@ -143,77 +145,93 @@ export default class Dashboard extends React.Component {
             await setTimeout(() => {
               x.func();
             }, 200);
-          }}>
+          }}
+        >
           <Text style={style.dashBtn}>{x.text}</Text>
         </TouchableOpacity>
       </View>
     );
   }
   render() {
-    return this.state.currentScreen === 'home' ? (
+    return this.state.currentScreen === "home" ? (
       <Animatable.View
         animation={this.state.back ? slideInLeft : slideInRight}
         style={style.mainContent}
-        duration={300}>
+        duration={300}
+      >
         <View style={style.titleBar}>
           <Text style={style.titleText}>{this.state.title}</Text>
           <TouchableOpacity
             onPress={async () => {
               await setTimeout(() => {
                 this.props.openDialog(
-                  'Change Access Pin',
-                  'By clicking confirm you will reset your access pin. Are you sure of this?',
+                  "Change Access Pin",
+                  "By clicking confirm you will reset your access pin. Are you sure of this?",
                   {
                     func: () => {
                       this.props.removePin();
-                      this.props.openTimedSnack('Reset Pin');
+                      this.props.openTimedSnack("Reset Pin");
                     },
-                  },
+                  }
                 );
               }, 200);
-            }}>
+            }}
+          >
             <Image
               style={style.titleBtn}
-              source={require('../../../assets/drawable/ic-full.png')}
+              source={require("../../../assets/drawable/ic-full.png")}
             />
           </TouchableOpacity>
         </View>
         <ScrollView style={style.dashView}>
           {this.Card({
-            title: 'Encrypt A  Message',
-            description: 'Create an encrypted text file from scratch.',
-            icon: require('../../../assets/drawable/ic-text.png'),
+            title: "Encrypt A  Message",
+            description: "Create an encrypted text file from scratch.",
+            icon: require("../../../assets/drawable/ic-text.png"),
             func: () => {
-              this.setState({currentScreen: 'msg'});
+              this.setState({ currentScreen: "enc-msg" });
             },
-            text: 'Encrypt',
+            text: "Encrypt",
           })}
           {this.Card({
-            title: 'Encrypt A Document',
-            description: 'Create an encrpted file of an existing Document.',
-            icon: require('../../../assets/drawable/ic-doc.png'),
-            func: () => {},
-            text: 'Encrypt',
+            title: "Encrypt A Document",
+            description: "Create an encrpted file of an existing Document.",
+            icon: require("../../../assets/drawable/ic-doc.png"),
+            func: () => {
+              this.setState({ currentScreen: "enc-doc" });
+            },
+            text: "Encrypt",
           })}
           {this.Card({
-            title: 'Decrypt A File',
-            description: 'Decrypt an encrypted file.',
-            icon: require('../../../assets/drawable/ic-decrypt.png'),
+            title: "Cloud Back-Up",
+            description:
+              "Acces your exixting cloud backups of your encrypted files.",
+            icon: require("../../../assets/drawable/ic-cloud.png"),
             func: () => {},
-            text: 'Decrypt',
+            text: "Access",
           })}
           {this.Card({
-            title: 'Edit Message',
-            description: 'Edit the contet of an existing encrypted      file.',
-            icon: require('../../../assets/drawable/ic-write.png'),
+            title: "Decrypt A File",
+            description: "Decrypt an encrypted file.",
+            icon: require("../../../assets/drawable/ic-decrypt.png"),
             func: () => {},
-            last: true,
-            text: 'Edit',
+            text: "Decrypt",
           })}
         </ScrollView>
       </Animatable.View>
-    ) : this.state.currentScreen === 'msg' ? (
+    ) : this.state.currentScreen === "enc-msg" ? (
       <CreateMessage
+        enableChill={this.props.enableChill}
+        disableChill={this.props.disableChill}
+        goHome={this.goHome.bind(this)}
+        openTimedSnack={this.props.openTimedSnack}
+        startLoader={this.props.startLoader}
+        closeLoader={this.props.closeLoader}
+        authenticated={this.props.authenticated}
+        openDialog={this.props.openDialog}
+      />
+    ) : this.state.currentScreen === "enc-doc" ? (
+      <EncryptDocument
         enableChill={this.props.enableChill}
         disableChill={this.props.disableChill}
         goHome={this.goHome.bind(this)}

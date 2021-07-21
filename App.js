@@ -4,7 +4,7 @@
  */
 
 import React, { Component } from "react";
-import { Keyboard, StyleSheet, Text, View } from "react-native";
+import { Keyboard, StyleSheet, Text, View, StatusBar } from "react-native";
 import { _auth } from "./src/config";
 import AuthScreen from "./src/main/app-auth/auth";
 import SplashScreen from "./src/main/app-splash/splash";
@@ -126,6 +126,13 @@ export default class App extends Component {
         ) : (
           <View style={{ display: "none" }} />
         )}
+
+        <DialogC
+          dialog={dg}
+          update={(x) => {
+            this.setState({ ...x });
+          }}
+        />
         {this.state.snackBar ? (
           <Animatable.View
             animation={300}
@@ -139,57 +146,6 @@ export default class App extends Component {
         ) : (
           <View style={{ display: "none" }} />
         )}
-        <Dialog.Container visible={dg.visible}>
-          <Dialog.Title>
-            <Text
-              style={{
-                alignSelf: "center",
-                flex: 1,
-                fontFamily: "Raleway-Bold",
-                fontSize: 25,
-                color: "#000",
-                borderLeftColor: "#ff011d",
-              }}
-            >
-              {dg.title}
-            </Text>
-          </Dialog.Title>
-          <Dialog.Description>
-            <Text
-              style={{
-                alignSelf: "center",
-                flex: 1,
-                fontFamily: "Raleway-Regular",
-                fontSize: 18,
-                color: "#979998",
-                borderLeftColor: "#ff011d",
-              }}
-            >
-              {dg.desc}
-            </Text>
-          </Dialog.Description>
-          <Dialog.Button
-            label={dg.cancel.text}
-            onPress={async () => {
-              this.setState({ dialog: { ...dg, visible: false } });
-              await setTimeout(() => {
-                if (dg.cancel.func) dg.cancel.func();
-              }, 1000);
-            }}
-            color={"#88898a"}
-          />
-          <Dialog.Button
-            label={dg.confirm.text}
-            onPress={async () => {
-              this.setState({ dialog: { ...dg, visible: false } });
-              await setTimeout(() => {
-                if (dg.confirm.func) dg.confirm.func();
-              }, 500);
-            }}
-            color={"#000000"}
-            bold={true}
-          />
-        </Dialog.Container>
       </View>
     );
   }
@@ -244,6 +200,89 @@ const style = StyleSheet.create({
   },
 });
 
+class DialogC extends Component {
+  render() {
+    const dg = this.props.dialog;
+    return (
+      <>
+        {dg.visible ? (
+          <StatusBar barStyle="dark-content" backgroundColor="#e0dfdc" />
+        ) : (
+          <View style={{ display: "none" }} />
+        )}
+        <Dialog.Container visible={dg.visible}>
+          <View
+            style={{
+              backgroundColor: "#fff",
+              margin: -20,
+              padding: 20,
+              marginTop: -40,
+              borderRadius: 10,
+            }}
+          >
+            <Dialog.Title>
+              <Text
+                style={{
+                  alignSelf: "center",
+                  flex: 1,
+                  fontFamily: "Raleway-Bold",
+                  fontSize: 25,
+                  color: "#000",
+                  borderLeftColor: "#ff011d",
+                }}
+              >
+                {dg.title}
+              </Text>
+            </Dialog.Title>
+            <Dialog.Description>
+              <Text
+                style={{
+                  alignSelf: "center",
+                  flex: 1,
+                  fontFamily: "Raleway-Regular",
+                  fontSize: 18,
+                  color: "#979998",
+                  borderLeftColor: "#ff011d",
+                }}
+              >
+                {dg.desc}
+              </Text>
+            </Dialog.Description>
+            <View
+              style={{
+                paddingTop: 50,
+                flexDirection: "row",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Dialog.Button
+                label={dg.cancel.text}
+                onPress={async () => {
+                  this.props.update({ dialog: { ...dg, visible: false } });
+                  await setTimeout(() => {
+                    if (dg.cancel.func) dg.cancel.func();
+                  }, 1000);
+                }}
+                color={"#88898a"}
+              />
+              <Dialog.Button
+                label={dg.confirm.text}
+                onPress={async () => {
+                  this.props.update({ dialog: { ...dg, visible: false } });
+                  await setTimeout(() => {
+                    if (dg.confirm.func) dg.confirm.func();
+                  }, 500);
+                }}
+                color={"#000000"}
+                bold={true}
+              />
+            </View>
+          </View>
+        </Dialog.Container>
+      </>
+    );
+  }
+}
 class Loader extends Component {
   componentDidMount() {
     Keyboard.dismiss();
