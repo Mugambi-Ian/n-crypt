@@ -135,60 +135,64 @@ export default class DecryptDocument extends React.Component {
       let message = decryptText(this.state.content, this.state.password);
       message = message.split("##Start##")[1];
       message = message.split("##End")[0];
-      console.log(message);
       message = JSON.parse(message);
       if (message.name && message.type) {
-        var fileUri = FileSystem.documentDirectory + "/" + message.name;
-        await FileSystem.writeAsStringAsync(fileUri, message.content, {
-          encoding: FileSystem.EncodingType.UTF8,
-        });
-        const response = await fetch(fileUri);
-        const _file = await response.blob();
-        const uploadTask = _storage
-          .ref(
-            "/decryption/" +
-              _auth.currentUser.uid +
-              "/" +
-              new Date().getTime() +
-              "_" +
-              message.name
-          )
-          .put(_file);
-        const ref = _database
-          .ref("users/" + _auth.currentUser.uid + "/decryption")
-          .push();
-        let url;
-        uploadTask
-          .on(
-            "state_changed",
-            function () {
-              uploadTask.snapshot.ref
-                .getDownloadURL()
-                .then(
-                  function (downloadURL) {
-                    url = "" + downloadURL;
-                    if (url) {
-                      ref.set({
-                        title: message.name,
-                        url,
-                        uploaded: TimeStamp,
-                        type: "Document",
-                      });
-                      this.props.closeLoader();
-                      this.props.openTimedSnack(
-                        "Decryption Succesfull: File Uploaded",
-                        true
-                      );
-                      this.props.goHome();
-                    }
-                  }.bind(this)
-                )
-                .catch(async (e) => {
-                  console.log(e);
-                });
-            }.bind(this)
-          )
-          .bind(this);
+        if (message.key === this.state.password) {
+          var fileUri = FileSystem.documentDirectory + "/" + message.name;
+          await FileSystem.writeAsStringAsync(fileUri, message.content, {
+            encoding: FileSystem.EncodingType.UTF8,
+          });
+          const response = await fetch(fileUri);
+          const _file = await response.blob();
+          const uploadTask = _storage
+            .ref(
+              "/decryption/" +
+                _auth.currentUser.uid +
+                "/" +
+                new Date().getTime() +
+                "_" +
+                message.name
+            )
+            .put(_file);
+          const ref = _database
+            .ref("users/" + _auth.currentUser.uid + "/decryption")
+            .push();
+          let url;
+          uploadTask
+            .on(
+              "state_changed",
+              function () {
+                uploadTask.snapshot.ref
+                  .getDownloadURL()
+                  .then(
+                    function (downloadURL) {
+                      url = "" + downloadURL;
+                      if (url) {
+                        ref.set({
+                          title: message.name,
+                          url,
+                          uploaded: TimeStamp,
+                          type: "Document",
+                        });
+                        this.props.closeLoader();
+                        this.props.openTimedSnack(
+                          "Decryption Succesfull: File Uploaded",
+                          true
+                        );
+                        this.props.goHome();
+                      }
+                    }.bind(this)
+                  )
+                  .catch(async (e) => {
+                    console.log(e);
+                  });
+              }.bind(this)
+            )
+            .bind(this);
+        } else {
+          this.props.closeLoader();
+          this.props.openTimedSnack("Decryption Failed", true);
+        }
       } else {
         this.props.closeLoader();
         this.props.openTimedSnack("Decryption Failed", true);

@@ -111,12 +111,11 @@ export default class EncryptDocument extends React.Component {
       reader.readAsText(result);
       reader.addEventListener("loadend", () => {
         let name = res.name;
-        let content = JSON.stringify({
+        let content = {
           type: res.type,
           content: reader.result,
           name,
-        });
-        content = "##Start##" + content + "##End##";
+        };
         let title = name.replace("/ /g", "_").replace("/./g", "");
         title = title.replace(".", "_");
         this.setState({ content, title });
@@ -125,7 +124,7 @@ export default class EncryptDocument extends React.Component {
     } catch (err) {
       this.props.closeLoader();
       this.props.goHome();
-      this.props.openTimedSnack("Failed to fetch file.",true);
+      this.props.openTimedSnack("Failed to fetch file.", true);
       console.log(err);
     }
   }
@@ -135,8 +134,11 @@ export default class EncryptDocument extends React.Component {
   async encryptUpload() {
     await this.props.startLoader();
     await setTimeout(async () => {
-      const message = encryptText(this.state.content, this.state.password);
-      console.log("encrypt");
+      let { content } = this.state;
+      content.key = this.state.password;
+      content = JSON.stringify(content);
+      content = "##Start##" + content + "##End##";
+      const message = encryptText(content, this.state.password);
       this.setState({ block: true });
       var fileUri =
         FileSystem.documentDirectory + "/" + this.state.title + ".penc";

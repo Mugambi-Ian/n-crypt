@@ -396,7 +396,7 @@ export default class EncryptDocument extends React.Component {
           >
             <ScrollView style={{ flex: 1 }}>
               {this.state.decrypted.map((d, i) => {
-                if (i === this.state.encrypted.length - 1) {
+                if (i === this.state.decrypted.length - 1) {
                   return this.card(d, i, true);
                 } else return this.card(d, i);
               })}

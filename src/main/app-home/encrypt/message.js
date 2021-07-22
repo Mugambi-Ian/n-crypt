@@ -139,9 +139,7 @@ export default class EncryptMessage extends React.Component {
               text: "YES",
               func: () => {
                 this.saveDraft().then(() => {
-                  this.props.openTimedSnack(
-                    "Draft Saved",true
-                  );
+                  this.props.openTimedSnack("Draft Saved", true);
                   this.props.goHome();
                 });
               },
@@ -178,6 +176,9 @@ export default class EncryptMessage extends React.Component {
         "<####>" +
         "title:" +
         this.state.title +
+        "<####>" +
+        "key:" +
+        this.state.password +
         "##End##",
       this.state.password
     );

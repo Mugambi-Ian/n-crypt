@@ -138,6 +138,7 @@ export default class DecryptMessage extends React.Component {
   }
   async decryptUpload() {
     await this.props.startLoader();
+    this.setState({ block: true });
     await setTimeout(async () => {
       try {
         let message = decryptText(this.state.content, this.state.password);
@@ -147,27 +148,35 @@ export default class DecryptMessage extends React.Component {
           message = message.split("<####>");
           const title = message[1].replace("title:", "");
           const content = message[0].replace("content:", "");
-          this.setState({ block: true });
-          const ref = _database
-            .ref("users/" + _auth.currentUser.uid + "/decryption")
-            .push();
-          ref.set({
-            title: title,
-            url: content,
-            uploaded: TimeStamp,
-            type: "Message",
-          });
-          this.props.closeLoader();
-          this.props.openTimedSnack(
-            "Decryption Succesfull: Message Saved",
-            true
-          );
-          this.props.goHome();
+          const key = message[2].replace("key:", "");
+          if (key === this.state.password) {
+            const ref = _database
+              .ref("users/" + _auth.currentUser.uid + "/decryption")
+              .push();
+            ref.set({
+              title: title,
+              url: content,
+              uploaded: TimeStamp,
+              type: "Message",
+            });
+            this.props.closeLoader();
+            this.props.openTimedSnack(
+              "Decryption Succesfull: Message Saved",
+              true
+            );
+            this.props.goHome();
+          } else {
+            this.setState({ block: false });
+            this.props.closeLoader();
+            this.props.openTimedSnack("Decryption Failed", true);
+          }
         } else {
+          this.setState({ block: false });
           this.props.closeLoader();
           this.props.openTimedSnack("Decryption Failed", true);
         }
       } catch (er) {
+        this.setState({ block: false });
         this.props.closeLoader();
         this.props.openTimedSnack("Decryption Failed", true);
       }
